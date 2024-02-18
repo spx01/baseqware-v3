@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="style.css" rel="stylesheet" />
+  </head>
+  <body class="menu-toggled">
+    <div class="container">
+      <div id="title">Valorant ESP</div>
+      <div id="menu">
+        <button id="popup">Pop Out</button>
+        <button id="pause">Pause</button>
+        <div class="teamEsp">
+          <label for="teamEsp">
+            <input type="checkbox" id="teamEsp" /> Team ESP
+          </label>
+          <input type="color" id="teamEspColor" />
+        </div>
+        <div class="enemyEsp">
+          <label for="enemyEsp">
+            <input type="checkbox" id="enemyEsp" /> Enemy ESP
+          </label>
+          <input type="color" id="enemyEspColor" />
+        </div>
+      </div>
+    </div>
+    <canvas id="canvas"></canvas>
+  </body>
+  <script src="main.js"></script>
+</html>

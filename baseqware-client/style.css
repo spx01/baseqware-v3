@@ -1,0 +1,104 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+#box {
+  width: 100px;
+  height: 100px;
+  background-color: red;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+body {
+  background-color: hsl(300, 4%, 18%);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 2rem;
+}
+
+#canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  position: relative;
+  z-index: 10;
+  flex-direction: column;
+}
+
+body.menu-toggled #canvas {
+  visibility: hidden;
+}
+
+body:not(.menu-toggled) .container {
+  visibility: hidden;
+}
+
+#title {
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 20px;
+}
+
+button {
+  font-size: 1.5rem;
+  padding: 10px 20px;
+  font-family: inherit;
+}
+
+input[type="checkbox"] {
+  zoom: 2;
+}
+
+input[type="color"] {
+  width: 20px;
+  height: 20px;
+  zoom: 2;
+  padding: 0;
+}
+
+.teamEsp,
+.enemyEsp {
+  display: flex;
+  align-items: center;
+  column-gap: 20px;
+  width: 100%;
+}
+
+#menu {
+  border-radius: 20px;
+  padding: 20px;
+  height: 70vh;
+  width: 60vh;
+  display: flex;
+  flex-direction: column;
+  background-color: indianred;
+  row-gap: 20px;
+}
+
+@keyframes rotatey {
+  0% {
+    transform: rotateY(0deg) rotateX(0deg) rotateZ(360deg);
+  }
+  100% {
+    transform: rotateY(360deg) rotateX(360deg) rotateZ(0deg);
+  }
+}
+
+#title {
+  color: white;
+  width: fit-content;
+  text-shadow: 0 0 10px white;
+  animation: rotatey 5s ease-in-out infinite;
+}

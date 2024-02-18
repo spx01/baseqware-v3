@@ -1,0 +1,28 @@
+---
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  misc-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -cert-dcl21-cpp,
+  -misc-no-recursion,
+  -performance-no-int-to-ptr,
+  -readability-braces-around-statements,
+  -readability-named-parameter,
+  -readability-identifier-length,
+  -readability-implicit-bool-conversion,
+WarningsAsErrors: ""
+FormatStyle: none
+CheckOptions:
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: readability-function-cognitive-complexity.Threshold
+    value: 50
