@@ -27,7 +27,7 @@ static bool gFoundAllModules = false;
 
 #if DBG
 #define SIOCTL_KDPRINT(_x_) \
-  DbgPrint("SIOCTL.SYS: "); \
+  DbgPrint("[PASED] ");     \
   DbgPrint _x_;
 
 #else
@@ -179,6 +179,7 @@ NTSTATUS cheat_device_control(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
   switch (irpSp->Parameters.DeviceIoControl.IoControlCode) {
   case IOCTL_SIOCTL_READ: {
+    // TODO: remove
     SIOCTL_KDPRINT(("Read request\n"));
 
     // Shouldn't happen.
