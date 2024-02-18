@@ -9,8 +9,8 @@
 
 #include <Windows.h>
 
+#include "../../offsets.hpp"
 #include "../sys/sioctl.h"
-#include "offsets.hpp"
 
 using namespace std::chrono_literals;
 
