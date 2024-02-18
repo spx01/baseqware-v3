@@ -3,6 +3,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include "cheat.hpp"
 #include "cheat_test.hpp"
 #include "server.hpp"
 
@@ -18,12 +19,14 @@ void init_log() {
 void run() {
   spdlog::info("Main thread");
   std::thread server_thread{server::thread_main};
-  std::thread cheat_test_thread{cheat::test::thread_main};
+  // std::thread cheat_test_thread{cheat::test::thread_main};
+  std::thread cheat_thread{cheat::thread_main};
   auto _ = std::getchar();
   server::g_stop_flag.store(true, std::memory_order_acquire);
   server::g_stop_flag.notify_all();
   server_thread.join();
-  cheat_test_thread.join();
+  // cheat_test_thread.join();
+  cheat_thread.join();
 }
 
 int main(int /*argc*/, char ** /*argv*/) {

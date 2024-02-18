@@ -1,5 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
+set_languages("c++23", "c17")
+
 add_requires("websocketpp");
 add_requires("spdlog");
 add_requires("nlohmann_json");
@@ -17,7 +19,10 @@ if is_plat("windows") then
 end
 
 target("baseqware-server")
-    set_languages("c++20")
     set_kind("binary")
     add_files("src/*.cpp")
     add_packages("websocketpp", "spdlog", "nlohmann_json")
+    if is_plat("windows") then
+        add_files("windows/*.c", "windows/*.cpp")
+        add_links("Advapi32")
+    end
