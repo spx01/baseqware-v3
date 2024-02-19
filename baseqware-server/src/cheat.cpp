@@ -4,6 +4,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include "../../offsets.hpp"
 #include "driver_interface.hpp"
 #include "server.hpp"
 
@@ -12,10 +13,19 @@ using driver_interface::ModuleInfo;
 
 namespace {
 void (*g_tick)();
-ModuleInfo g_modules[driver_interface::PASED_MODULE_COUNT_];
+union {
+  ModuleInfo arr[driver_interface::PASED_MODULE_COUNT_];
+  struct {
+    ModuleInfo client;
+  };
+} g_modules{};
 const char *k_module_names[] = {
   "client.dll",
 };
+
+struct {
+  uintptr_t local_player = 0;
+} g;
 
 void load_modules();
 void get_globals();
@@ -24,7 +34,7 @@ void main_tick();
 void load_modules() {
   bool found_missing = false;
   for (int i = 0; i < driver_interface::PASED_MODULE_COUNT_; ++i) {
-    if (g_modules[i].base_address != 0) {
+    if (g_modules.arr[i].base_address != 0) {
       continue;
     }
     auto [success, info] = driver_interface::get_module_info(
@@ -35,7 +45,7 @@ void load_modules() {
       spdlog::info(
         "Found module: {} at 0x{:x}", k_module_names[i], info.base_address
       );
-      g_modules[i] = info;
+      g_modules.arr[i] = info;
     } else {
       found_missing = true;
     }
@@ -47,8 +57,12 @@ void load_modules() {
 }
 
 void get_globals() {
+  driver_interface::read(
+    g_modules.client.base_address + client_dll::dwLocalPlayerPawn,
+    g.local_player
+  );
   std::this_thread::sleep_for(2s);
-  spdlog::info("print slow test");
+  spdlog::info("{:x}", g.local_player);
 }
 
 void main_tick() {
