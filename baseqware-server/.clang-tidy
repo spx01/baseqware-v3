@@ -16,6 +16,7 @@ Checks: >
   -readability-braces-around-statements,
   -readability-named-parameter,
   -readability-identifier-length,
+  -readability-implicit-bool-conversion,
 WarningsAsErrors: ""
 FormatStyle: none
 CheckOptions:
