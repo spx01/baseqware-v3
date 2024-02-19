@@ -25,7 +25,11 @@ const char *k_module_names[] = {
 };
 
 struct {
+  /// Local player pawn
   uintptr_t local_player = 0;
+  /// Local player controller
+  uintptr_t local_player_ctrl = 0;
+  bool is_alive;
 } g;
 
 void load_modules();
@@ -58,17 +62,35 @@ void load_modules() {
 }
 
 void get_globals() {
-  g_modules.client.read(client_dll::dwLocalPlayerPawn, g.local_player);
-  spdlog::info("{:x}", g.local_player);
-  if (bool(g.local_player)) {
-    int health = -1;
-    driver_interface::read(g.local_player + C_BaseEntity::m_iHealth, health);
-    spdlog::info("Health: {}", health);
-  }
-  std::this_thread::sleep_for(2s);
+  [] {
+    g_modules.client.read(client_dll::dwLocalPlayerPawn, g.local_player);
+    g_modules.client.read(
+      client_dll::dwLocalPlayerController, g.local_player_ctrl
+    );
+    if (!bool(g.local_player_ctrl) || !bool(g.local_player)) {
+      return;
+    }
+    driver_interface::read(
+      g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive
+    );
+    spdlog::info("Alive: {}", g.is_alive);
+    if (g.is_alive) {
+      g_tick = main_tick;
+    }
+  }();
+  std::this_thread::sleep_for(1s);
 }
 
 void main_tick() {
+  spdlog::info("test");
+
+  driver_interface::read(
+    g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive
+  );
+  if (!g.is_alive) {
+    g_tick = get_globals;
+  }
+  std::this_thread::sleep_for(1s);
 }
 } // namespace
 
