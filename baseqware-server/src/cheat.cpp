@@ -4,7 +4,8 @@
 
 #include <spdlog/spdlog.h>
 
-#include "../../offsets.hpp"
+#include "../../offsets/client.dll.hpp"
+#include "../../offsets/offsets.hpp"
 #include "driver_interface.hpp"
 #include "server.hpp"
 
@@ -58,8 +59,13 @@ void load_modules() {
 
 void get_globals() {
   g_modules.client.read(client_dll::dwLocalPlayerPawn, g.local_player);
-  std::this_thread::sleep_for(2s);
   spdlog::info("{:x}", g.local_player);
+  if (bool(g.local_player)) {
+    int health = -1;
+    driver_interface::read(g.local_player + C_BaseEntity::m_iHealth, health);
+    spdlog::info("Health: {}", health);
+  }
+  std::this_thread::sleep_for(2s);
 }
 
 void main_tick() {
@@ -76,6 +82,7 @@ void thread_main() {
 
   g_tick = load_modules; // weird state machine
   spdlog::info("Waiting for modules...");
+  // TODO: add timer
   while (!server::g_stop_flag.load(std::memory_order_acquire)) {
     if (driver_interface::is_game_running()) {
       game_running = true;
