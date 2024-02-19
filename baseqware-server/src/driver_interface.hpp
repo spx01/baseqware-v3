@@ -17,8 +17,8 @@ enum ModuleRequest {
 };
 
 struct ModuleInfo {
-  uintptr_t base_address;
-  size_t size;
+  uintptr_t base_address = 0;
+  size_t size = 0;
 };
 
 // First bool is true if the module was found.

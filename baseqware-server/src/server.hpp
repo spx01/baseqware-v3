@@ -13,6 +13,7 @@ using json = nlohmann::json;
 
 namespace server {
 
+// TODO: function
 inline std::atomic<bool> g_stop_flag{false};
 
 struct BoxData {

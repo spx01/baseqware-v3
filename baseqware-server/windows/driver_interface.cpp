@@ -109,12 +109,14 @@ bool initialize() {
     return false;
   }
   ioctl_set_receiver(HANDLE(uintptr_t(GetCurrentProcessId())));
+  spdlog::info("Kernel driver initialized");
   return true;
 }
 
 void finalize() {
   CloseHandle(gDevice);
   ManageDriver(DRIVER_NAME, gDriverLocation, DRIVER_FUNC_REMOVE);
+  spdlog::info("Kernel driver stopped and removed");
 }
 
 bool read_raw(uint64_t game_address, void *dest, size_t size) {
@@ -155,10 +157,12 @@ bool is_game_running() {
     nullptr
   );
   if (!bool(status)) {
-    spdlog::error("Kernel pid: DeviceIoControl failed");
+    if (GetLastError() != ERROR_NOT_FOUND) {
+      spdlog::error("Kernel pid: DeviceIoControl failed", GetLastError());
+    }
     return false;
   }
-  return request.OutPid != 0;
+  return true;
 }
 
 std::pair<bool, ModuleInfo> get_module_info(ModuleRequest module) {
@@ -176,7 +180,9 @@ std::pair<bool, ModuleInfo> get_module_info(ModuleRequest module) {
     nullptr
   );
   if (!bool(status)) {
-    spdlog::error("Kernel module: DeviceIoControl failed");
+    if (GetLastError() != ERROR_NOT_FOUND) {
+      spdlog::error("Kernel module: DeviceIoControl failed");
+    }
     return {false, {}};
   }
   return {true, {uintptr_t(request.OutAddress), request.OutSize}};
