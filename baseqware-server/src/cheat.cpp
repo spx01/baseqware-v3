@@ -57,10 +57,7 @@ void load_modules() {
 }
 
 void get_globals() {
-  driver_interface::read(
-    g_modules.client.base_address + client_dll::dwLocalPlayerPawn,
-    g.local_player
-  );
+  g_modules.client.read(client_dll::dwLocalPlayerPawn, g.local_player);
   std::this_thread::sleep_for(2s);
   spdlog::info("{:x}", g.local_player);
 }

@@ -1,8 +1,9 @@
 /// Windows specific driver interface implementation.
 
-#include "../src/driver_interface.hpp"
-
+// Windows.h has to be included first, I still can't figure out why. :)
 #include <Windows.h>
+
+#include "../src/driver_interface.hpp"
 
 #include <spdlog/spdlog.h>
 
