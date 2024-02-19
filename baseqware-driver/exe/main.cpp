@@ -9,7 +9,7 @@
 
 #include <Windows.h>
 
-#include "../../offsets.hpp"
+#include "../../offsets/offsets.hpp"
 #include "../sys/sioctl.h"
 
 using namespace std::chrono_literals;

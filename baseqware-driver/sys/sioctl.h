@@ -32,6 +32,7 @@ typedef struct {
 
 typedef enum {
   PASED_CLIENT_MODULE,
+  PASED_ENGINE_MODULE,
   PASED_MODULE_COUNT_,
 } PASED_MODULE_TYPE;
 

@@ -18,10 +18,12 @@ union {
   ModuleInfo arr[driver_interface::PASED_MODULE_COUNT_];
   struct {
     ModuleInfo client;
+    ModuleInfo engine;
   };
 } g_modules{};
-const char *k_module_names[] = {
+const char *k_module_names[driver_interface::PASED_MODULE_COUNT_] = {
   "client.dll",
+  "engine2.dll",
 };
 
 struct {

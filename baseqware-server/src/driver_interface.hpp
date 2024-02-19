@@ -15,6 +15,7 @@ bool is_game_running();
 // Has to be updated along with the other definitions from the driver code.
 enum ModuleRequest {
   PASED_CLIENT_MODULE,
+  PASED_ENGINE_MODULE,
   PASED_MODULE_COUNT_,
 };
 

@@ -21,6 +21,7 @@ typedef struct {
 
 static GAME_MODULE_INFO gGameModules[PASED_MODULE_COUNT_] = {
   {L"\\bin\\win64\\client.dll", 0, NULL},
+  {L"\\bin\\win64\\engine2.dll", 0, NULL},
 };
 
 static bool gFoundAllModules = false;
