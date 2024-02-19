@@ -97,14 +97,16 @@ CreateProcessNotifyRoutine(HANDLE ParentId, HANDLE ProcessId, BOOLEAN Create) {
     return;
   }
 
-  if (!Create && ProcessId == gGamePID) {
-    SIOCTL_KDPRINT(("Game process exited\n"));
-    gGameProcess = NULL;
-    gGamePID = 0;
-    for (int i = 0; i < PASED_MODULE_COUNT_; i++) {
-      gGameModules[i].Address = NULL;
-      gGameModules[i].Size = 0;
-    }
+  if (Create || ProcessId != gGamePID) {
+    return;
+  }
+
+  SIOCTL_KDPRINT(("Game process exited\n"));
+  gGameProcess = NULL;
+  gGamePID = 0;
+  for (int i = 0; i < PASED_MODULE_COUNT_; i++) {
+    gGameModules[i].Address = NULL;
+    gGameModules[i].Size = 0;
   }
   gFoundAllModules = false;
 }
