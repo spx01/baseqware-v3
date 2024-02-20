@@ -7,6 +7,7 @@
 #include "../../offsets/client.dll.hpp"
 #include "../../offsets/offsets.hpp"
 #include "driver_interface.hpp"
+#include "sdk/entity.hpp"
 #include "server.hpp"
 #include "util.hpp"
 
@@ -31,12 +32,11 @@ const char *k_module_names[driver_interface::PASED_MODULE_COUNT_] = {
 
 struct {
   /// Local player pawn
-  uintptr_t local_player = 0;
+  sdk::BaseEntity local_player{0};
   /// Local player controller
   uintptr_t local_player_ctrl = 0;
-  /// Network game client
-  uintptr_t network_game_client = 0;
-  bool is_alive;
+  bool is_alive = false;
+  sdk::EntityList entity_list{0};
 } g;
 
 void load_modules();
@@ -99,26 +99,15 @@ void load_modules() {
 void get_globals() {
   util::ScopeGuard sg([] { std::this_thread::sleep_for(1s); });
 
-  g_modules.engine.read(
-    engine2_dll::dwNetworkGameClient, g.network_game_client
-  );
-  if (!g.network_game_client) {
-    return;
-  }
-  spdlog::info("network_game_client: 0x{:x}", g.network_game_client);
-  int signon_state = 0;
-  read(
-    g.network_game_client + engine2_dll::dwNetworkGameClient_signOnState,
-    signon_state
-  );
-  spdlog::info("signon_state: {}", signon_state);
   g_modules.client.read(client_dll::dwLocalPlayerPawn, g.local_player);
   g_modules.client.read(
     client_dll::dwLocalPlayerController, g.local_player_ctrl
   );
-  if (!g.local_player_ctrl || !g.local_player) {
+  g_modules.client.read(client_dll::dwEntityList, g.entity_list);
+  if (!g.local_player_ctrl || !g.local_player || !g.entity_list) {
     return;
   }
+  spdlog::info("entity list: 0x{:x}", g.entity_list.addr);
   read(g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive);
   if (g.is_alive) {
     g_tick = main_tick;
@@ -129,17 +118,6 @@ void get_globals() {
 void main_tick() {
   static util::SyncTimer timer{1s};
   util::ScopeGuard sg([] { timer.wait(); });
-
-  int signon_state = 0;
-  RW(read(
-    g.network_game_client + engine2_dll::dwNetworkGameClient_signOnState,
-    signon_state
-  ));
-  spdlog::info("main_tick: signon_state: {}", signon_state);
-  RW(g_modules.engine.read(
-    engine2_dll::dwNetworkGameClient, g.network_game_client
-  ));
-  spdlog::info("main_tick: network_game_client: 0x{:x}", g.network_game_client);
 
   RW(read(g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive)
   );
@@ -165,6 +143,8 @@ void thread_main() {
       spdlog::info("Game stopped, exiting");
       stop();
       break;
+    } else {
+      std::this_thread::sleep_for(1s);
     }
   }
   driver_interface::finalize();

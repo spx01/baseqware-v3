@@ -27,7 +27,7 @@ Environment:
 #include <strsafe.h>
 #include <windows.h>
 
-#include "../../baseqware-driver/sys/sioctl.h"
+#include "../../baseqware-driver-windows/sys/sioctl.h"
 
 BOOLEAN
 InstallDriver(
@@ -38,7 +38,9 @@ BOOLEAN
 RemoveDriver(_In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName);
 
 BOOLEAN
-StartDriver(_In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName);
+StartDriver(
+  _In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName, PBOOLEAN AlreadyLoaded
+);
 
 BOOLEAN
 StopDriver(_In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName);
@@ -131,7 +133,10 @@ Return Value:
 
 BOOLEAN
 ManageDriver(
-  _In_ LPCTSTR DriverName, _In_ LPCTSTR ServiceName, _In_ USHORT Function
+  _In_ LPCTSTR DriverName,
+  _In_ LPCTSTR ServiceName,
+  _In_ USHORT Function,
+  _Inout_ PBOOLEAN AlreadyLoaded
 ) {
 
   SC_HANDLE schSCManager;
@@ -184,7 +189,7 @@ ManageDriver(
       // Start the driver service (i.e. start the driver).
       //
 
-      rCode = StartDriver(schSCManager, DriverName);
+      rCode = StartDriver(schSCManager, DriverName, AlreadyLoaded);
 
     } else {
 
@@ -300,9 +305,13 @@ RemoveDriver(_In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName) {
 } // RemoveDriver
 
 BOOLEAN
-StartDriver(_In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName) {
+StartDriver(
+  _In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName, PBOOLEAN AlreadyLoaded
+) {
   SC_HANDLE schService;
   DWORD err;
+
+  *AlreadyLoaded = FALSE;
 
   //
   // Open the handle to the existing service.
@@ -338,7 +347,10 @@ StartDriver(_In_ SC_HANDLE SchSCManager, _In_ LPCTSTR DriverName) {
       //
       // Ignore this error.
       //
-
+      printf("Detected service already running\n");
+      if (AlreadyLoaded) {
+        *AlreadyLoaded = TRUE;
+      }
       return TRUE;
 
     } else {

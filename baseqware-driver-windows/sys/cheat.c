@@ -247,14 +247,18 @@ NTSTATUS cheat_device_control(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
       (PASED_RECEIVER_REQUEST *)Irp->AssociatedIrp.SystemBuffer;
     SIOCTL_KDPRINT(("Receiver PID: %lx\n", request->ReceiverPID));
 
-    PEPROCESS process;
-    ntStatus = PsLookupProcessByProcessId(request->ReceiverPID, &process);
-    if (!NT_SUCCESS(ntStatus)) {
-      ntStatus = STATUS_NOT_FOUND;
-      goto End;
+    if (request->ReceiverPID != 0) {
+      PEPROCESS process;
+      ntStatus = PsLookupProcessByProcessId(request->ReceiverPID, &process);
+      if (!NT_SUCCESS(ntStatus)) {
+        ntStatus = STATUS_NOT_FOUND;
+        goto End;
+      }
+      gCheatProcess = process;
+    } else {
+      gCheatProcess = NULL;
     }
 
-    gCheatProcess = process;
     Irp->IoStatus.Information = sizeof(*request);
     break;
   }

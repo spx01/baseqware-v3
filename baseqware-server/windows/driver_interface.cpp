@@ -6,15 +6,19 @@
 #include "../src/driver_interface.hpp"
 
 #include <spdlog/spdlog.h>
+#include <winnt.h>
 
-#include "../../baseqware-driver/sys/sioctl.h"
+#include "../../baseqware-driver-windows/sys/sioctl.h"
 
 namespace {
 
 extern "C" {
 BOOLEAN
 ManageDriver(
-  _In_ LPCTSTR DriverName, _In_ LPCTSTR ServiceName, _In_ USHORT Function
+  _In_ LPCTSTR DriverName,
+  _In_ LPCTSTR ServiceName,
+  _In_ USHORT Function,
+  _Inout_ PBOOLEAN DriverLoadedBefore
 );
 
 BOOLEAN
@@ -26,6 +30,7 @@ SetupDriverName(
 
 TCHAR gDriverLocation[MAX_PATH];
 HANDLE gDevice;
+BOOLEAN gDriverLoadedBefore = FALSE;
 
 HANDLE get_driver() {
   DWORD errNum = 0;
@@ -34,9 +39,9 @@ HANDLE get_driver() {
   hDevice = CreateFile(
     "\\\\.\\IoctlTest",
     GENERIC_READ | GENERIC_WRITE,
-    0,
+    FILE_SHARE_READ | FILE_SHARE_WRITE,
     NULL,
-    CREATE_ALWAYS,
+    OPEN_ALWAYS,
     FILE_ATTRIBUTE_NORMAL,
     NULL
   );
@@ -57,10 +62,14 @@ HANDLE get_driver() {
       return INVALID_HANDLE_VALUE;
     }
 
-    if (!bool(ManageDriver(DRIVER_NAME, gDriverLocation, DRIVER_FUNC_INSTALL)
-        )) {
+    if (!bool(ManageDriver(
+          DRIVER_NAME,
+          gDriverLocation,
+          DRIVER_FUNC_INSTALL,
+          &gDriverLoadedBefore
+        ))) {
       spdlog::error("Unable to install driver");
-      ManageDriver(DRIVER_NAME, gDriverLocation, DRIVER_FUNC_REMOVE);
+      ManageDriver(DRIVER_NAME, gDriverLocation, DRIVER_FUNC_REMOVE, nullptr);
       return INVALID_HANDLE_VALUE;
     }
 
@@ -78,6 +87,8 @@ HANDLE get_driver() {
       spdlog::error("CreateFile for driver failed: {}", GetLastError());
       return INVALID_HANDLE_VALUE;
     }
+  } else {
+    gDriverLoadedBefore = TRUE;
   }
   return hDevice;
 }
@@ -116,7 +127,11 @@ bool initialize() {
 
 void finalize() {
   CloseHandle(gDevice);
-  ManageDriver(DRIVER_NAME, gDriverLocation, DRIVER_FUNC_REMOVE);
+  // If the driver was loaded before the cheat runs, we don't want to remove it.
+  if (gDriverLoadedBefore) {
+    return;
+  }
+  ManageDriver(DRIVER_NAME, gDriverLocation, DRIVER_FUNC_REMOVE, nullptr);
   spdlog::info("Kernel driver stopped and removed");
 }
 
