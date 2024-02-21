@@ -141,7 +141,7 @@ std::optional<server::BoxData> to_box(
   auto screen_width = screen_height * k_player_width / player_height;
 
   boxdata.x = static_cast<int>(screen2.x - screen_width / 2);
-  boxdata.y = static_cast<int>(screen2.y - screen_height);
+  boxdata.y = static_cast<int>(screen1.y);
   boxdata.w = static_cast<int>(screen_width);
   boxdata.h = static_cast<int>(screen_height);
   return boxdata;
