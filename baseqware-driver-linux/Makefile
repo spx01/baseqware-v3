@@ -1,4 +1,4 @@
-MOD = module/baseq-module
+MOD = module/baseq_module
 KPATH :=/lib/modules/$(shell uname -r)/build
 PWD :=$(shell pwd)
 obj-m = $(MOD).o
