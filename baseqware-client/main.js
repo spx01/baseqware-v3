@@ -7,6 +7,25 @@ canvas.height = window.innerHeight;
 let windowPos = { x: 0, y: 0 };
 let watermark = null;
 
+// Retrieve team and enemy ESP settings from local storage
+let teamEspEnabled = localStorage.getItem("teamEspEnabled") === "true";
+let enemyEspEnabled = localStorage.getItem("enemyEspEnabled") === "true";
+
+// Update the checkboxes in index.html based on the local storage values
+document.getElementById("teamEsp").checked = teamEspEnabled;
+document.getElementById("enemyEsp").checked = enemyEspEnabled;
+
+// Add event listeners to the checkboxes to update the local storage values
+document.getElementById("teamEsp").addEventListener("change", function () {
+  teamEspEnabled = this.checked;
+  localStorage.setItem("teamEspEnabled", teamEspEnabled);
+});
+
+document.getElementById("enemyEsp").addEventListener("change", function () {
+  enemyEspEnabled = this.checked;
+  localStorage.setItem("enemyEspEnabled", enemyEspEnabled);
+});
+
 window.addEventListener("resize", function () {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -28,6 +47,12 @@ function clear_canvas() {
 }
 
 function draw_box(data) {
+  if (data.is_enemy && !enemyEspEnabled) {
+    return;
+  }
+  if (!data.is_enemy && !teamEspEnabled) {
+    return;
+  }
   const context = canvas.getContext("2d");
   context.strokeStyle = "white";
   context.lineWidth = 2;

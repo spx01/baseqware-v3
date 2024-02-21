@@ -20,6 +20,7 @@ SDK_DECLARE_MEMBER(uint32_t, m_hPlayerPawn, CCSPlayerController::m_hPlayerPawn);
 SDK_DECLARE_MEMBER(
   uintptr_t, m_sSanitizedPlayerName, CCSPlayerController::m_sSanitizedPlayerName
 );
+SDK_DECLARE_MEMBER(bool, m_bPawnIsAlive, CCSPlayerController::m_bPawnIsAlive);
 
 std::string get_name(bool &rc) const;
 BaseEntity get_pawn(driver_interface::ModuleInfo client, bool &rc) const;

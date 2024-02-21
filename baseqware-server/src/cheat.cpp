@@ -115,13 +115,45 @@ void get_globals() {
   }
 }
 
+std::optional<server::BoxData> to_box(
+  const sdk::Vec3 &origin,
+  const sdk::ViewMatrix &view_matrix,
+  const std::pair<int, int> &screen_dim,
+  bool crouching
+) {
+  constexpr float k_crouching_height = 54.F;
+  constexpr float k_standing_height = 72.F;
+  constexpr float k_player_width = 32.F;
+
+  server::BoxData boxdata;
+  sdk::Vec2 screen1;
+  sdk::Vec2 screen2;
+  bool on_screen = view_matrix.w2s(origin, screen_dim, screen1);
+  if (!on_screen) {
+    return boxdata;
+  }
+  auto player_height = crouching ? k_crouching_height : k_standing_height;
+  auto _ = view_matrix.w2s(
+    origin + sdk::Vec3{0.F, 0.F, player_height}, screen_dim, screen2 // NOLINT
+  );
+
+  auto screen_height = screen2.y - screen1.y;
+  auto screen_width = screen_height * k_player_width / player_height;
+
+  boxdata.x = static_cast<int>(screen2.x - screen_width / 2);
+  boxdata.y = static_cast<int>(screen2.y - screen_height);
+  boxdata.w = static_cast<int>(screen_width);
+  boxdata.h = static_cast<int>(screen_height);
+  return boxdata;
+}
+
 void main_tick() {
   static util::SyncTimer timer{4ms};
   util::ScopeGuard sg([] { timer.wait(); });
 
+  // TODO:
   RW(read(g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive)
   );
-  ES(g.is_alive, get_globals);
 
   sdk::ViewMatrix view_matrix;
   RW(g_modules.client.read(client_dll::dwViewMatrix, view_matrix));
@@ -139,10 +171,15 @@ void main_tick() {
   }();
   boxes.clear();
 
+  int local_team = g.local_player.m_iTeamNum(rc);
+
   for (int i = 0; i < sdk::EntityListEntry::k_max_idx; ++i) {
     rc = true;
     auto pc = ent_list_entry.at(i, rc);
     if (!pc) {
+      continue;
+    }
+    if (!pc.m_bPawnIsAlive(rc)) {
       continue;
     }
     // spdlog::info("Player controller {}: 0x{:x}", i, pc.addr);
@@ -162,7 +199,7 @@ void main_tick() {
     }
 
     auto entity = pc.get_pawn(g_modules.client, rc);
-    if (!rc) {
+    if (!rc || entity.addr == g.local_player.addr) {
       continue;
     }
     auto game_scene_node = sdk::GameSceneNode(entity.m_pGameSceneNode(rc));
@@ -180,12 +217,13 @@ void main_tick() {
     }
 
     // spdlog::info("Screen: ({}, {})", screen.x, screen.y);
-    server::BoxData boxdata;
-    boxdata.x = static_cast<int>(screen.x) - 100;
-    boxdata.y = static_cast<int>(screen.y) - 100;
-    boxdata.w = 100;
-    boxdata.h = 100;
-    boxes.push_back(boxdata);
+    auto box = to_box(origin, view_matrix, screen_dim, false);
+    if (box) {
+      if (entity.m_iTeamNum(rc) != local_team) {
+        box->is_enemy = true;
+      }
+      boxes.push_back(*box);
+    }
   }
 
   if (!boxes.empty()) {
