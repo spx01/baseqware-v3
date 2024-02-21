@@ -10,16 +10,17 @@
 #include <linux/ioctl.h>
 #include <linux/kdev_t.h>
 #include <linux/kernel.h>
+#include <linux/kprobes.h>
 #include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
 
-#include "asm/page_types.h"
 #include "ioctl.h"
-#include "linux/mm_types.h"
-#include "linux/printk.h"
-#include "linux/types.h"
+#include <asm/page_types.h>
+#include <linux/mm_types.h>
+#include <linux/printk.h>
+#include <linux/types.h>
 
 /**
  * Global variables
@@ -53,6 +54,8 @@ ssize_t baseq_write(
 int baseq_open(struct inode *inode, struct file *file);
 int baseq_release(struct inode *inode, struct file *file);
 long int baseq_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+static void lookup_game_task(bool print_err);
+static void load_game_modules_info(void);
 
 /**
  * @brief Defines file operations supported by the device
@@ -64,6 +67,49 @@ static struct file_operations fops = {
   .open = baseq_open,
   .release = baseq_release,
   .unlocked_ioctl = baseq_ioctl
+};
+
+// use kprobe to detect game exit
+static void game_exit_kprobe_handler(
+  struct kprobe *p, struct pt_regs *regs, unsigned long flags
+) {
+  if (game_task == NULL || game_task->pid != current->pid) {
+    return;
+  }
+  pr_info(
+    "baseq: game exited: name=%s, pid=%d\n", game_task->comm, game_task->pid
+  );
+  game_task = NULL;
+  found_all_modules = false;
+}
+
+static bool game_exit_kprobe_enabled = false;
+static struct kprobe game_exit_kprobe = {
+  .symbol_name = "do_exit", .post_handler = game_exit_kprobe_handler
+};
+
+// use kretprobe to detect game start
+
+static int game_start_kretprobe_handler(
+  struct kretprobe_instance *ri, struct pt_regs *regs
+) {
+  if (game_task != NULL) {
+    return 0;
+  }
+  lookup_game_task(false);
+  load_game_modules_info();
+  if (game_task != NULL) {
+    pr_info(
+      "baseq: game started: name=%s, pid=%d\n", game_task->comm, game_task->pid
+    );
+    return 0;
+  }
+  return 1;
+}
+
+static bool game_start_kretprobe_enabled = false;
+static struct kretprobe game_start_kretprobe = {
+  .handler = game_start_kretprobe_handler, .kp.symbol_name = "copy_process"
 };
 
 /**
@@ -168,7 +214,7 @@ ssize_t rw_virtual_memory(uintptr_t address, size_t len, void *buf, int write) {
   return buf - old_buf;
 }
 
-static void lookup_game_task(void) {
+static void lookup_game_task(bool print_err) {
   if (game_task) {
     return;
   }
@@ -178,6 +224,9 @@ static void lookup_game_task(void) {
   if (task) {
     game_task = task;
     status = 0;
+  }
+  if (!print_err && status != 0) {
+    return;
   }
   pr_info(
     "baseq: lookup_game_task: status=%d, name=%s, pid=%d\n",
@@ -483,8 +532,21 @@ static int __init baseq_init(void) {
 
   pr_info("baseq: loaded: major=%d, minor=%d\n", MAJOR(dev), MINOR(dev));
 
-  lookup_game_task();
+  lookup_game_task(true);
   load_game_modules_info();
+
+  if (register_kprobe(&game_exit_kprobe) < 0) {
+    pr_err("baseq: failed to register game_exit_kprobe\n");
+  } else {
+    pr_info("baseq: registered game_exit_kprobe\n");
+    game_exit_kprobe_enabled = true;
+  }
+  if (register_kretprobe(&game_start_kretprobe) < 0) {
+    pr_err("baseq: failed to register game_start_kretprobe\n");
+  } else {
+    pr_info("baseq: registered game_start_kretprobe\n");
+    game_start_kretprobe_enabled = true;
+  }
 
   return 0;
 
@@ -504,6 +566,10 @@ static void __exit baseq_exit(void) {
   device_destroy(dev_class, dev);
   class_destroy(dev_class);
   unregister_chrdev_region(dev, 1);
+  if (game_exit_kprobe_enabled)
+    unregister_kprobe(&game_exit_kprobe);
+  if (game_start_kretprobe_enabled)
+    unregister_kretprobe(&game_start_kretprobe);
 
   pr_info("baseq: unloaded\n");
 }
