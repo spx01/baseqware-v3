@@ -16,7 +16,7 @@
 
 #define SDK_DECLARE_MEMBER(type, name, offset)                  \
   type name(bool &rc) const {                                   \
-    type value;                                                 \
+    type value{};                                               \
     rc &= driver_interface::read(this->addr + (offset), value); \
     return value;                                               \
   }                                                             \

@@ -152,7 +152,8 @@ bool read_raw(uint64_t game_address, void *dest, size_t size) {
     nullptr
   );
   if (!bool(status)) {
-    spdlog::error("Kernel read: DeviceIoControl failed");
+    // TODO: perhaps add an extra argument to allow for error logging.
+    // spdlog::error("Kernel read: DeviceIoControl failed");
     return false;
   }
   return true;

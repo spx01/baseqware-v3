@@ -99,11 +99,11 @@ void load_modules() {
 void get_globals() {
   util::ScopeGuard sg([] { std::this_thread::sleep_for(1s); });
 
-  g_modules.client.read(client_dll::dwLocalPlayerPawn, g.local_player);
+  g_modules.client.read(client_dll::dwLocalPlayerPawn, g.local_player.addr);
   g_modules.client.read(
     client_dll::dwLocalPlayerController, g.local_player_ctrl
   );
-  g_modules.client.read(client_dll::dwEntityList, g.entity_list);
+  g_modules.client.read(client_dll::dwEntityList, g.entity_list.addr);
   if (!g.local_player_ctrl || !g.local_player || !g.entity_list) {
     return;
   }
@@ -122,6 +122,26 @@ void main_tick() {
   RW(read(g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive)
   );
   ES(g.is_alive, get_globals);
+
+  bool rc = true;
+  auto ent_list_entry = g.entity_list.get_entry(rc);
+  if (!rc) {
+    return;
+  }
+  for (int i = 0; i < sdk::EntityListEntry::k_max_idx; ++i) {
+    rc = true;
+    auto pc = ent_list_entry.at(i, rc);
+    if (!pc) {
+      continue;
+    }
+    spdlog::info("Player controller {}: 0x{:x}", i, pc.addr);
+    auto name_addr = pc.m_sSanitizedPlayerName(rc);
+    auto name = pc.get_name(rc);
+    if (!rc) {
+      continue;
+    }
+    spdlog::info("Player: {}", name);
+  }
 }
 } // namespace
 
