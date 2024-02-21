@@ -1,0 +1,19 @@
+---
+BasedOnStyle: LLVM
+BinPackArguments: false
+BinPackParameters: false
+AlignAfterOpenBracket: BlockIndent
+Cpp11BracedListStyle: true
+AlignConsecutiveBitFields: true
+AlignEscapedNewlines: Left
+AlignOperands: DontAlign
+AllowShortFunctionsOnASingleLine: InlineOnly
+AlwaysBreakTemplateDeclarations: Yes
+ContinuationIndentWidth: 2
+ConstructorInitializerIndentWidth: 2
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+BreakBeforeBinaryOperators: NonAssignment
+EmptyLineBeforeAccessModifier: Always
+InsertNewlineAtEOF: true
+LineEnding: LF
+...
