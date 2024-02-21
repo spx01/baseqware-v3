@@ -8,6 +8,8 @@
 #include "server.hpp"
 
 using namespace std::chrono_literals;
+using ::server::g_screen_height;
+using ::server::g_screen_width;
 using ::server::g_stop_flag;
 
 ws_server::ws_server() {
@@ -94,6 +96,11 @@ void ws_server::on_message( // NOLINT
     }
     return;
   }
+
+  // On connection, the client sends the width and the height of the screen.
+  json j = json::parse(payload);
+  g_screen_width.store(j.at("width"), std::memory_order_relaxed);
+  g_screen_height.store(j.at("height"), std::memory_order_relaxed);
   spdlog::debug("Websocket server received message: {}", msg->get_payload());
 }
 
@@ -104,6 +111,8 @@ void ws_server::close() {
   }
   m_connections.clear();
   m_endpoint.stop();
+  g_screen_height.store(0, std::memory_order_relaxed);
+  g_screen_width.store(0, std::memory_order_relaxed);
 }
 
 void ws_server::on_open(connection_hdl hdl) { // NOLINT

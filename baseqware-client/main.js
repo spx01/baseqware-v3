@@ -64,7 +64,7 @@ socket.addEventListener("message", function (event) {
   // socket.send(JSON.stringify(windowPos));
 
   const data = JSON.parse(event.data);
-  console.log(data);
+  // console.log(data);
   if (Array.isArray(data)) {
     clear_canvas();
     for (let i = 0; i < data.length; i++) {
@@ -74,13 +74,13 @@ socket.addEventListener("message", function (event) {
 });
 
 window.addEventListener("focus", function () {
-  socket.send("focus");
+  socket.send(">focus");
   let body = document.querySelector("body");
   body.classList.add("menu-toggled");
 });
 
 window.addEventListener("blur", function () {
-  socket.send("blur");
+  socket.send(">blur");
   let body = document.querySelector("body");
   body.classList.remove("menu-toggled");
 });

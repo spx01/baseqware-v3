@@ -8,6 +8,7 @@
 #include "../../offsets/offsets.hpp"
 #include "driver_interface.hpp"
 #include "sdk/entity.hpp"
+#include "sdk/view_matrix.hpp"
 #include "server.hpp"
 #include "util.hpp"
 
@@ -34,8 +35,8 @@ struct {
   /// Local player pawn
   sdk::BaseEntity local_player{0};
   /// Local player controller
-  uintptr_t local_player_ctrl = 0;
-  bool is_alive = false;
+  uintptr_t local_player_ctrl{0};
+  bool is_alive{false};
   sdk::EntityList entity_list{0};
 } g;
 
@@ -107,7 +108,6 @@ void get_globals() {
   if (!g.local_player_ctrl || !g.local_player || !g.entity_list) {
     return;
   }
-  spdlog::info("entity list: 0x{:x}", g.entity_list.addr);
   read(g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive);
   if (g.is_alive) {
     g_tick = main_tick;
@@ -116,31 +116,80 @@ void get_globals() {
 }
 
 void main_tick() {
-  static util::SyncTimer timer{1s};
+  static util::SyncTimer timer{4ms};
   util::ScopeGuard sg([] { timer.wait(); });
 
   RW(read(g.local_player_ctrl + CCSPlayerController::m_bPawnIsAlive, g.is_alive)
   );
   ES(g.is_alive, get_globals);
 
+  sdk::ViewMatrix view_matrix;
+  RW(g_modules.client.read(client_dll::dwViewMatrix, view_matrix));
+
   bool rc = true;
   auto ent_list_entry = g.entity_list.get_entry(rc);
   if (!rc) {
     return;
   }
+
+  auto boxes = []() -> auto {
+    std::vector<server::BoxData> vec;
+    vec.reserve(sdk::EntityListEntry::k_max_idx);
+    return vec;
+  }();
+  boxes.clear();
+
   for (int i = 0; i < sdk::EntityListEntry::k_max_idx; ++i) {
     rc = true;
     auto pc = ent_list_entry.at(i, rc);
     if (!pc) {
       continue;
     }
-    spdlog::info("Player controller {}: 0x{:x}", i, pc.addr);
+    // spdlog::info("Player controller {}: 0x{:x}", i, pc.addr);
     auto name_addr = pc.m_sSanitizedPlayerName(rc);
     auto name = pc.get_name(rc);
     if (!rc) {
       continue;
     }
-    spdlog::info("Player: {}", name);
+    // spdlog::info("Player: {}", name);
+
+    // TODO: add a utility function in server.hpp
+    std::pair<int, int> screen_dim = {
+      server::g_screen_width, server::g_screen_height
+    };
+    if (screen_dim.first == 0 || screen_dim.second == 0) {
+      continue;
+    }
+
+    auto entity = pc.get_pawn(g_modules.client, rc);
+    if (!rc) {
+      continue;
+    }
+    auto game_scene_node = sdk::GameSceneNode(entity.m_pGameSceneNode(rc));
+    if (!rc || !game_scene_node) {
+      continue;
+    }
+
+    auto origin = game_scene_node.m_vecAbsOrigin(rc);
+    // spdlog::info("Origin: ({}, {}, {})", origin.x, origin.y, origin.z);
+
+    sdk::Vec2 screen;
+    bool on_screen = view_matrix.w2s(origin, screen_dim, screen);
+    if (!on_screen) {
+      continue;
+    }
+
+    // spdlog::info("Screen: ({}, {})", screen.x, screen.y);
+    server::BoxData boxdata;
+    boxdata.x = static_cast<int>(screen.x) - 100;
+    boxdata.y = static_cast<int>(screen.y) - 100;
+    boxdata.w = 100;
+    boxdata.h = 100;
+    boxes.push_back(boxdata);
+  }
+
+  if (!boxes.empty()) {
+    server::g_draw_data.boxes.write(std::vector(boxes));
   }
 }
 } // namespace
