@@ -2,6 +2,8 @@
 
 #include <linux/types.h>
 #include <linux/ioctl.h>
+#include <stdint.h>
+#include <stddef.h>
 
 enum baseq_module_type{
   BASEQ_LIBCLIENT_MODULE,
