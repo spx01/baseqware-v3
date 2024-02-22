@@ -38,6 +38,7 @@ struct baseq_rw_s {
 /**
  * Ioctl declarations
  */
+#define baseq_GET_PID _IOW(0x22, 0, pid_t)
 #define baseq_GET_MODULE _IOWR(0x22, 1, struct baseq_module_req_s *)
 #define baseq_READ _IOWR(0x22, 2, struct baseq_rw_s *)
 #define baseq_WRITE _IOWR(0x22, 3, struct baseq_rw_s *)

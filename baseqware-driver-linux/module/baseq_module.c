@@ -301,6 +301,20 @@ static void load_game_modules_info(void) {
  */
 long int baseq_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
   switch (cmd) {
+  case baseq_GET_PID: {
+    int status = 0;
+    if (game_task == NULL) {
+      status = -ENOENT;
+      goto get_pid_out;
+    }
+    if (copy_to_user((void *)arg, &game_task->pid, sizeof(pid_t)) != 0) {
+      status = -EFAULT;
+      goto get_pid_out;
+    }
+  get_pid_out:
+    pr_info("baseq: get_pid: status=%d\n", status);
+    return status;
+  }
   case baseq_GET_MODULE: {
     struct baseq_module_req_s req;
     int status = 0;
