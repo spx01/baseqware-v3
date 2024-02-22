@@ -10,12 +10,15 @@ if is_mode("debug") then
     add_defines("DEBUG")
 end
 
-set_allowedarchs("x64")
--- linux support is not yet implemented
-set_allowedplats("windows")
+set_allowedarchs("x64", "x86_64")
+set_allowedplats("windows", "linux")
 
 if is_plat("windows") then
     add_cxxflags("/EHsc")
+end
+
+if is_plat("linux") then
+    add_cxxflags("-pthread")
 end
 
 target("baseqware-server")
@@ -25,4 +28,8 @@ target("baseqware-server")
     if is_plat("windows") then
         add_files("windows/*.c", "windows/*.cpp")
         add_links("Advapi32")
+    end
+    if is_plat("linux") then
+        add_files("linux/*.cpp")
+        add_links("pthread")
     end
