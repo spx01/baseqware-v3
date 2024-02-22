@@ -3,8 +3,10 @@
 #include "../src/driver_interface.hpp"
 
 #include "../../baseqware-driver-linux/ko/ioctl.h"
+#include <spdlog/spdlog.h>
 
 #include <cstdint>
+#include <cstring>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -29,15 +31,19 @@ int getDriver() {
   const int fd = open(driverPath, O_RDONLY);
   if (fd < 0) {
     // Driver not found
+    spdlog::error("Failed to open driver file: {}", driverPath);
     close(fd);
     return -1;
   }
   if (finit_module(fd, "", 0) != 0) {
     if (errno != EEXIST) {
+      // Driver loading Failed
+      spdlog::error("Failed to load driver");
       close(fd);
       return -1;
     }
     // Driver already loaded
+    spdlog::info("Driver already loaded");
     driverLoadedBefore = true;
   }
   close(fd);
@@ -48,10 +54,13 @@ int getDriver() {
 
 namespace driver_interface {
 
-// TODO: LOG ERRORS
 bool initialize() {
   driverFD = getDriver();
-  return driverFD >= 0;
+  if (driverFD < 0) {
+    return false;
+  }
+  spdlog::info("Kernel driver initialized");
+  return true;
 }
 
 void finalize() {
@@ -61,8 +70,10 @@ void finalize() {
   }
   if (delete_module("baseq_module", O_NONBLOCK) != 0) {
     // Driver unloading failed
+    spdlog::error("Failed to unload driver");
     return;
   }
+  spdlog::info("Kernel driver stopped and unloaded");
 }
 
 bool read_raw(uint64_t game_address, void *dest, size_t size) {
@@ -82,6 +93,7 @@ bool is_game_running() {
   pid_t pid = 0;
   if (ioctl(driverFD, baseq_GET_PID, &pid) != 0) {
     // Request failed
+    spdlog::error("Kernel GET_PID: IOCTL failed: {}", strerror(errno));
     return false;
   }
   return pid != 0;
@@ -95,6 +107,7 @@ std::pair<bool, ModuleInfo> get_module_info(ModuleRequest module) {
   };
   if (ioctl(driverFD, baseq_GET_MODULE, &request) != 0) {
     // Request failed
+    spdlog::error("Kernel GET_MODULE: IOCTL failed: {}", strerror(errno));
     return {false, {}};
   }
   return {true, {request.out_address, request.out_size}};
