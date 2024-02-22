@@ -20,7 +20,7 @@
 namespace {
 
 const char *driverPath =
-  "../../baseqware-driver-linux/module/baseq_module.ko";
+  "../../baseqware-driver-linux/build/linux/x86_64/release/baseq_module.ko";
 
 bool driverLoadedBefore = false;
 int driverFD = -1;
