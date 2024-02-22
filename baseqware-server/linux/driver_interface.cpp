@@ -2,7 +2,7 @@
 
 #include "../src/driver_interface.hpp"
 
-#include "../../baseqware-driver-linux/module/ioctl.h"
+#include "../../baseqware-driver-linux/ko/ioctl.h"
 
 #include <cstdint>
 #include <errno.h>
