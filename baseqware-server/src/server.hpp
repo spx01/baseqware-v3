@@ -15,6 +15,8 @@ namespace server {
 
 // TODO: function
 inline std::atomic<bool> g_stop_flag{false};
+inline std::atomic<int> g_screen_width{0};
+inline std::atomic<int> g_screen_height{0};
 
 struct BoxData {
   int x, y, w, h;

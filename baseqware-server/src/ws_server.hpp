@@ -12,13 +12,7 @@
 
 // TODO: move this
 /// Websocket send rate in Hz.
-static constexpr int kSendRate =
-// FIXME:
-#ifdef DEBUG
-  10;
-#else
-  60;
-#endif
+static constexpr int kSendRate = 120;
 
 class ws_server {
 public:
@@ -30,6 +24,7 @@ public:
 
 private:
   // TODO: Turn this into a map, we need need data about each client.
+  // Or make it handle only one client at a time.
   using con_list = std::set<connection_hdl, std::owner_less<connection_hdl>>;
 
   server m_endpoint;

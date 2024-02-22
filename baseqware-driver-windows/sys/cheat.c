@@ -182,9 +182,6 @@ NTSTATUS cheat_device_control(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
   switch (irpSp->Parameters.DeviceIoControl.IoControlCode) {
   case IOCTL_SIOCTL_READ: {
-    // TODO: remove
-    SIOCTL_KDPRINT(("Read request\n"));
-
     // Shouldn't happen.
     if (gCheatProcess == NULL) {
       ntStatus = STATUS_NOT_FOUND;

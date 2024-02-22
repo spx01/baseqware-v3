@@ -20,7 +20,7 @@ end
 
 target("baseqware-server")
     set_kind("binary")
-    add_files("src/*.cpp")
+    add_files("src/*.cpp", "src/sdk/*.cpp")
     add_packages("websocketpp", "spdlog", "nlohmann_json")
     if is_plat("windows") then
         add_files("windows/*.c", "windows/*.cpp")
