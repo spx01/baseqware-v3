@@ -24,7 +24,7 @@ public:
   // updated will be set to true if the data isn't stale.
   T read(bool &updated) const {
     bool b = m_stale_flag.load(std::memory_order_acquire);
-    updated |= b;
+    updated |= !b;
     if (b) { // NOLINT
       return *m_present;
     }

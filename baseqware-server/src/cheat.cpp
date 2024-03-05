@@ -21,7 +21,7 @@ namespace {
 void (*g_tick)();
 union {
   ModuleInfo arr[driver_interface::PASED_MODULE_COUNT_];
-  struct {
+  struct Modules {
     ModuleInfo client;
     ModuleInfo engine;
   };
@@ -80,7 +80,7 @@ void load_modules() {
     }
   }
   if (!found_missing) {
-    uint64_t build_number = 0;
+    uint32_t build_number = 0;
     if (!g_modules.engine.read(engine2_dll::dwBuildNumber, build_number)) {
       spdlog::error("Failed to read build number");
       g_tick = stop;
