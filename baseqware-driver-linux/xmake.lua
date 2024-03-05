@@ -1,0 +1,6 @@
+add_cflags("-std=gnu17", "-O2")
+target("baseq_module")
+    add_rules("platform.linux.driver")
+    add_files("ko/*.c")
+    set_values("linux.driver.linux-headers", "/lib/modules/$(shell uname -r)/build")
+    set_license("GPL-2.0")
