@@ -24,7 +24,7 @@ IMPORTANT: Don't use this or any other software that grants an unfair advantage 
 - Place the resulting `SIoctl.sys` file in the same directory as the server executable
 - Run the server as administrator, it will automatically install/load and stop/delete the driver during execution
 - (Re)start the game, only use with `-insecure` as a launch option!
-- Stop the cheat by pressing enter in the associated console window
+- The cheat can be stopped whenever by pressing the enter key in the associated console window
 - Fire up your web server of choice (e.g. python's http.server) in the `baseqware-client` directory
 - Open the Steam overlay from in-game, go to the web page
 - Pin the browser window and minimize its opacity
