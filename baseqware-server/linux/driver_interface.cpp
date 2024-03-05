@@ -21,13 +21,12 @@
 
 namespace {
 
-const char *driverPath =
-  "../../baseqware-driver-linux/build/linux/x86_64/release/baseq_module.ko";
+const char *driverPath = "./baseq_module.ko";
 
 bool driverLoadedBefore = false;
 int driverFD = -1;
 
-int getDriver() {
+int get_driver() {
   const int fd = open(driverPath, O_RDONLY);
   if (fd < 0) {
     // Driver not found
@@ -55,7 +54,7 @@ int getDriver() {
 namespace driver_interface {
 
 bool initialize() {
-  driverFD = getDriver();
+  driverFD = get_driver();
   if (driverFD < 0) {
     return false;
   }
