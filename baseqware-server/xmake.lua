@@ -17,10 +17,6 @@ if is_plat("windows") then
     add_cxxflags("/EHsc")
 end
 
-if is_plat("linux") then
-    add_cxxflags("-pthread")
-end
-
 target("baseqware-server")
     set_kind("binary")
     add_files("src/*.cpp", "src/sdk/*.cpp")
@@ -31,5 +27,5 @@ target("baseqware-server")
     end
     if is_plat("linux") then
         add_files("linux/*.cpp")
-        add_links("pthread")
+        add_cxflags("-pthread")
     end
