@@ -21,11 +21,11 @@ namespace {
 void (*g_tick)();
 union {
   ModuleInfo arr[driver_interface::PASED_MODULE_COUNT_];
-  struct Modules {
+  struct {
     ModuleInfo client;
     ModuleInfo engine;
   };
-} g_modules{};
+} g_modules = {0};
 const char *k_module_names[driver_interface::PASED_MODULE_COUNT_] = {
   "client.dll",
   "engine2.dll",

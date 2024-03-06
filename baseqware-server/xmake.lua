@@ -2,7 +2,13 @@ add_rules("mode.debug", "mode.release")
 
 set_languages("c++23", "c17")
 
-add_requires("websocketpp");
+if is_plat("linux") then
+    -- The main branch is currently not compatible with gcc when compiling as
+    -- C++20 or above.
+    add_requires("websocketpp develop")
+else
+    add_requires("websocketpp");
+end
 add_requires("spdlog");
 add_requires("nlohmann_json");
 

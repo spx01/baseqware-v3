@@ -25,8 +25,8 @@ bool read(uint64_t address, T &value) {
 }
 
 struct ModuleInfo {
-  uintptr_t base_address = 0;
-  size_t size = 0;
+  uintptr_t base_address;
+  size_t size;
 
   template <typename T>
   bool read(uintptr_t offset, T &value) const {
