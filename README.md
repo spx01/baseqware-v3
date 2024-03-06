@@ -1,8 +1,6 @@
 # baseqware-v3
 
-Simple Windows kernel driver based CS2 cheat meant to run primarily in the Steam overlay browser window.
-
-Linux support is WIP.
+Simple cross platform kernel driver/module based CS2 cheat rendered in the Steam overlay browser window.
 
 ## Structure
 
@@ -19,7 +17,7 @@ IMPORTANT: Don't use this or any other software that grants an unfair advantage 
 ### Windows
 
 - [Enable test signing mode](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/the-testsigning-boot-configuration-option)
-- Put your offsets into the `offsets` directory (https://github.com/a2x/cs2-dumper)
+- Put your offsets into the `offsets` directory (https://github.com/a2x/cs2-dumper on Windows or https://github.com/Albert24GG/cs2-dumper/tree/linux on Linux)
 - Compile the kernel driver and the server
 - Place the resulting `SIoctl.sys` file in the same directory as the server executable
 - Run the server as administrator, it will automatically install/load and stop/delete the driver during execution
